@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import fs from "fs"
 import path from "path"
+import { put } from "@vercel/blob"
 
 export const runtime = "nodejs"
 
@@ -12,10 +13,21 @@ function ensureUploadsDir(): string {
 
 async function saveFile(file: File | null, prefix: string) {
   if (!file) return null
+  const useBlob = Boolean(process.env.BLOB_READ_WRITE_TOKEN)
   const arrayBuffer = await file.arrayBuffer()
   const buffer = Buffer.from(arrayBuffer)
   const ext = path.extname(file.name || ".pdf") || ".pdf"
   const fileName = `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`
+
+  if (useBlob) {
+    const res = await put(`cases/${fileName}`, buffer, {
+      access: "public",
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+      contentType: "application/pdf",
+    })
+    return res.url
+  }
+
   const uploadsDir = ensureUploadsDir()
   const filePath = path.join(uploadsDir, fileName)
   fs.writeFileSync(filePath, buffer)

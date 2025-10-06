@@ -2,7 +2,8 @@ import { NextResponse } from "next/server"
 import { casesStore, type CaseItem } from "@/lib/casesStore"
 
 export async function GET() {
-  return NextResponse.json({ cases: casesStore })
+  const all = await casesStore.list()
+  return NextResponse.json({ cases: all })
 }
 
 export async function POST(req: Request) {
@@ -14,9 +15,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json()
     const items: CaseItem[] = Array.isArray(body) ? body : [body]
-    for (const item of items) {
-      casesStore.push(item)
-    }
+    await casesStore.push(...items)
     return NextResponse.json({ ok: true, count: items.length })
   } catch (e) {
     return NextResponse.json({ error: "invalid_json" }, { status: 400 })

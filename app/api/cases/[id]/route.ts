@@ -22,14 +22,8 @@ export async function PATCH(
     return NextResponse.json({ error: "invalid_json" }, { status: 400 })
   }
 
-  const idx = casesStore.findIndex((c) => c.id === idNum)
-  if (idx === -1) {
-    return NextResponse.json({ error: "not_found" }, { status: 404 })
-  }
-
-  const updated = { ...casesStore[idx], ...payload }
-  casesStore[idx] = updated
-
+  const updated = await casesStore.update(idNum, payload)
+  if (!updated) return NextResponse.json({ error: "not_found" }, { status: 404 })
   return NextResponse.json({ ok: true, case: updated })
 }
 
