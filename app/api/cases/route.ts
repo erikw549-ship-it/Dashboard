@@ -7,6 +7,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  console.log("POST REQUEST FROM /api/cases")
   const token = process.env.CASES_TOKEN
   if (token && req.headers.get("x-cases-token") !== token) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 })
